@@ -143,6 +143,7 @@ class ATOM01RoughEnvCfg(ATOM01FlatEnvCfg):
         self.scene.terrain_generator = ROUGH_TERRAINS_CFG
         self.robot.actor_obs_history_length = 1
         self.robot.critic_obs_history_length = 1
+        self.reward.feet_air_time.weight = 0.25
         self.reward.track_lin_vel_xy_exp.weight = 1.5
         self.reward.track_ang_vel_z_exp.weight = 1.5
         self.reward.lin_vel_z_l2.weight = -0.25
