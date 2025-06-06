@@ -5,3 +5,5 @@ outputs
 logs
 run_bash.sh
 wandb
+*.png
+*.mp4
