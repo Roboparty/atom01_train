@@ -19,7 +19,8 @@ setup(
     version="1.0.0",
     install_requires=[
         # 'isaacsim',
-        "IsaacLab",
+        # "IsaacLab",
         "rsl-rl-lib>=2.3.0",
+        "mujoco==2.3.6",
     ],
 )
