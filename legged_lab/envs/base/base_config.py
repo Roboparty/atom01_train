@@ -178,11 +178,12 @@ class DomainRandCfg:
 
 @configclass
 class PhysxCfg:
+    solver_type=1,
     gpu_max_rigid_patch_count: int = 10 * 2**15
 
 
 @configclass
 class SimCfg:
-    dt: float = 0.005
-    decimation: int = 4
+    dt: float = 0.004
+    decimation: int = 5
     physx: PhysxCfg = PhysxCfg()
