@@ -58,6 +58,7 @@ class BaseEnv(VecEnv):
         self.sim.reset()
 
         self.robot: Articulation = self.scene["robot"]
+        print(self.robot.data.joint_names)
         self.contact_sensor: ContactSensor = self.scene.sensors["contact_sensor"]
         if self.cfg.scene.height_scanner.enable_height_scan:
             self.height_scanner: RayCaster = self.scene.sensors["height_scanner"]
