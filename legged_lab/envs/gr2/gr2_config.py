@@ -43,11 +43,6 @@ class GR2RewardCfg(RewardCfg):
         weight=-1.0,
         params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names="(?!.*foot_pitch.*).*"), "threshold": 1.0},
     )
-    fly = RewTerm(
-        func=mdp.fly,
-        weight=-1.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=".*foot_pitch.*"), "threshold": 1.0},
-    )
     flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-1.0)
     termination_penalty = RewTerm(func=mdp.is_terminated, weight=-200.0)
     feet_air_time = RewTerm(
@@ -71,11 +66,6 @@ class GR2RewardCfg(RewardCfg):
             "threshold": 500,
             "max_reward": 400,
         },
-    )
-    feet_too_near = RewTerm(
-        func=mdp.feet_too_near_humanoid,
-        weight=-2.0,
-        params={"asset_cfg": SceneEntityCfg("robot", body_names=[".*foot_pitch.*"]), "threshold": 0.25},
     )
     feet_stumble = RewTerm(
         func=mdp.feet_stumble,
