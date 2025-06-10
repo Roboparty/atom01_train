@@ -89,25 +89,25 @@ def run_mujoco(policy, cfg, headless=False):
         # 创建并配置相机
         cam = mujoco.MjvCamera()
         cam.distance = 4.0      # 增加距离以获得更好的视角
-        cam.azimuth = 135.0     # 水平旋转角度
+        cam.azimuth = 45.0     # 水平旋转角度
         cam.elevation = -20.0   # 垂直俯仰角度
         cam.lookat = [0, 0, 1]  # 观察点位置
-        out = cv2.VideoWriter('simulation.mp4', fourcc, 1/cfg.sim_config.dt/cfg.sim_config.decimation, (1920, 1080))
+        out = cv2.VideoWriter('simulation.mp4', fourcc, 1.0/cfg.sim_config.dt/cfg.sim_config.decimation, (1920, 1080))
     else:
         mode = 'window'
         viewer = mujoco_viewer.MujocoViewer(model, data, mode=mode, width=1920, height=1080)
         # 设置窗口模式下的相机参数
         viewer.cam.distance = 4.0
-        viewer.cam.azimuth = 135.0
+        viewer.cam.azimuth = 45.0
         viewer.cam.elevation = -20.0
         viewer.cam.lookat = [0, 0, 1]
 
 
-    target_q = np.zeros((cfg.robot_config.num_actions), dtype=np.double)
+    target_pos = np.zeros((cfg.robot_config.num_actions), dtype=np.double)
     action = np.zeros((cfg.robot_config.num_actions), dtype=np.double)
 
     hist_obs = np.zeros((cfg.robot_config.frame_stack, cfg.robot_config.num_single_obs), dtype=np.double)
-    first_run = True
+    hist_obs.fill(0.0)
 
     count_lowlevel = 0
 
@@ -133,36 +133,29 @@ def run_mujoco(policy, cfg, headless=False):
         if count_lowlevel % cfg.sim_config.decimation == 0:
             q_obs = np.zeros((cfg.robot_config.num_actions), dtype=np.double)
             dq_obs = np.zeros((cfg.robot_config.num_actions), dtype=np.double)
-            q_obs = q - cfg.robot_config.default_pos
+            q_ = q - cfg.robot_config.default_pos
             for i in range(len(cfg.robot_config.usd2urdf)):
-                q_obs[i] = q[cfg.robot_config.usd2urdf[i]]
+                q_obs[i] = q_[cfg.robot_config.usd2urdf[i]]
                 dq_obs[i] = dq[cfg.robot_config.usd2urdf[i]]
 
             obs = np.zeros([1, cfg.robot_config.num_single_obs], dtype=np.float32)
             
-            obs[0, 0:3] = omega
+            obs[0, 0:3] = omega * 0.25
             obs[0, 3:6] = gvec
             obs[0, 6] = cmd.vx 
             obs[0, 7] = cmd.vy 
             obs[0, 8] = cmd.dyaw 
             obs[0, 9:32] = q_obs
-            obs[0, 32:55] = dq_obs
+            obs[0, 32:55] = dq_obs * 0.05
             obs[0, 55:78] = action
 
-            if first_run:
-                hist_obs[:] = obs.reshape(1, -1)
-                first_run = False
-            else:
-                hist_obs = np.concatenate(
-                    (hist_obs[1:], obs.reshape(1, -1)), axis=0
-                )
+            hist_obs = np.concatenate((hist_obs[1:], obs.reshape(1, -1)), axis=0)
 
             policy_input = hist_obs.reshape(1, -1).astype(np.float32)
             with torch.inference_mode():
                 action[:] = policy(torch.tensor(policy_input))[0].detach().numpy()
 
             target_q = action * cfg.robot_config.action_scale
-            target_pos = np.zeros((cfg.robot_config.num_actions), dtype=np.double)
             for i in range(len(cfg.robot_config.usd2urdf)):
                 target_pos[cfg.robot_config.usd2urdf[i]] = target_q[i]
             target_pos = target_pos + cfg.robot_config.default_pos
@@ -317,9 +310,9 @@ if __name__ == '__main__':
             decimation = 20
 
         class robot_config:
-            kps = np.array([125, 125, 150, 150, 50, 50, 125, 125, 150, 150, 50, 50, 125, 75, 75, 75, 50, 50, 75, 75, 75, 50, 50], dtype=np.double)
-            kds = np.array([4, 4, 4.5, 4.5, 2.5, 2.5, 4, 4, 4.5, 4.5, 2.5, 2.5, 4, 3, 3, 3, 2.5, 2.5, 3, 3, 3, 2.5, 2.5], dtype=np.double)
-            default_pos = np.array([0, 0, -0.24, 0.48, -0.24, 0, 0, 0, -0.24, 0.48, -0.24, 0, 0, 0.24, 0, 0, 0.48, 0, 0.24, 0, 0, 0.48, 0], dtype=np.double)
+            kps = np.array([150, 150, 200, 200, 100, 100, 150, 150, 200, 200, 100, 100, 150, 100, 100, 100, 50, 50, 100, 100, 100, 50, 50], dtype=np.double)
+            kds = np.array([4, 4, 5, 5, 3, 3, 4, 4, 5, 5, 3, 3, 4, 3, 3, 3, 2, 2, 3, 3, 3, 2, 2], dtype=np.double)
+            default_pos = np.array([0, 0, -0.24, 0.48, -0.24, 0, 0, 0, -0.24, 0.48, -0.24, 0, 0, 0.24, 0, 0, 0.6, 0, 0.24, 0, 0, 0.6, 0], dtype=np.double)
             tau_limit = 200. * np.ones(23, dtype=np.double)
             frame_stack = 10
             num_single_obs = 78

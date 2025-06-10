@@ -82,17 +82,13 @@
     <geom name="ground" type="plane" size="0 0 1" pos="0.001 0 0" quat="1 0 0 0" material="matplane" condim="1" conaffinity='15'/>
 
     <body name="base_link" pos="0 0 0.7">
-
-      <geom type="mesh" mesh="base_link" group="1"/>
-
+      <site name='imu' size='0.01' pos='0.0 0 0.0'/>
       <inertial pos="-0.077749 -0.00027844 0.03283" quat="-0.00169048 0.848368 0.0018474 0.5294" mass="5.18129" diaginertia="0.0635131 0.0520745 0.0274799"/>
       <joint type='slide' axis='1 0 0' limited='false' />
       <joint type='slide' axis='0 1 0' limited='false' />
       <joint type='slide' axis='0 0 1' limited='false' />
       <joint type='ball' limited='false' />
-      <site name='imu' size='0.01' pos='0.0 0 0.0'/>
-
-      <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="base_link" class="visualgeom"/>
+      <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="base_link"/>
       <body name="left_thigh_yaw_link" pos="-0.10111 0.072188 -0.0014904">
         <inertial pos="-0.0316749 -8.77229e-05 -0.0526261" quat="0.962938 -0.000832482 0.26972 0.000487327" mass="1.65549" diaginertia="0.00935823 0.00881277 0.000922906"/>
         <joint name="left_thigh_yaw_joint" pos="0 0 0" axis="0.499998 0 0.866027" range="-0.2 1" class="leg_joint_param"/>
