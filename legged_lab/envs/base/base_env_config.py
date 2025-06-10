@@ -75,11 +75,11 @@ class BaseEnvCfg:
     normalization: NormalizationCfg = NormalizationCfg(
         obs_scales=ObsScalesCfg(
             lin_vel=1.0,
-            ang_vel=1.0,
+            ang_vel=0.25,
             projected_gravity=1.0,
             commands=1.0,
             joint_pos=1.0,
-            joint_vel=1.0,
+            joint_vel=0.05,
             actions=1.0,
             height_scan=1.0,
         ),
@@ -191,10 +191,10 @@ class BaseAgentCfg(RslRlOnPolicyRunnerCfg):
         entropy_coef=0.005,
         num_learning_epochs=5,
         num_mini_batches=4,
-        learning_rate=1.0e-3,
+        learning_rate=1.0e-4,
         schedule="adaptive",
-        gamma=0.99,
-        lam=0.95,
+        gamma=0.994,
+        lam=0.9,
         desired_kl=0.01,
         max_grad_norm=1.0,
         normalize_advantage_per_mini_batch=False,
@@ -202,7 +202,7 @@ class BaseAgentCfg(RslRlOnPolicyRunnerCfg):
         rnd_cfg=None,  # RslRlRndCfg()
     )
     clip_actions = None
-    save_interval = 100
+    save_interval = 500
     experiment_name = ""
     run_name = ""
     logger = "wandb"
