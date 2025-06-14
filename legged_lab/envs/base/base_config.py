@@ -178,7 +178,6 @@ class DomainRandCfg:
 
 @configclass
 class PhysxCfg:
-    solver_type=1,
     gpu_max_rigid_patch_count: int = 10 * 2**15
 
 
