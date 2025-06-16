@@ -12,6 +12,15 @@
 from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers.scene_entity_cfg import SceneEntityCfg
 from isaaclab.utils import configclass
+from isaaclab_rl.rsl_rl import (  # noqa:F401
+    RslRlOnPolicyRunnerCfg,
+    RslRlPpoActorCriticCfg,
+    RslRlPpoAlgorithmCfg,
+    RslRlRndCfg,
+    RslRlSymmetryCfg,
+)
+import torch
+import numpy as np
 
 import legged_lab.mdp as mdp
 from legged_lab.assets.roboparty import ATOM01_CFG
@@ -48,19 +57,19 @@ class ATOM01RewardCfg(RewardCfg):
     flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-0.4)
     left_feet_orientation_l2 = RewTerm(
         func=mdp.body_orientation_l2,
-        weight=-0.2,
+        weight=-0.4,
         params={"asset_cfg": SceneEntityCfg("robot", body_names=".*left_ankle_roll.*")},
     )
     right_feet_orientation_l2 = RewTerm(
         func=mdp.body_orientation_l2,
-        weight=-0.2,
+        weight=-0.4,
         params={"asset_cfg": SceneEntityCfg("robot", body_names=".*right_ankle_roll.*")},
     )
     termination_penalty = RewTerm(func=mdp.is_terminated, weight=-200.0)
     feet_air_time = RewTerm(
         func=mdp.feet_air_time_positive_biped,
         weight=0.4,
-        params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=".*ankle_roll.*"), "threshold": 0.4},
+        params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=".*ankle_roll.*"), "threshold": 0.5},
     )
     feet_slide = RewTerm(
         func=mdp.feet_slide,
@@ -92,26 +101,35 @@ class ATOM01RewardCfg(RewardCfg):
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1.0)
     joint_deviation_hip = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.1,
+        weight=-0.15,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", joint_names=[".*_thigh_yaw.*", ".*_thigh_roll.*"]
             )
         },
     )
+    joint_deviation_torso = RewTerm(
+        func=mdp.joint_deviation_l1,
+        weight=-0.75,
+        params={
+            "asset_cfg": SceneEntityCfg(
+                "robot", joint_names=[".*torso.*"]
+            )
+        },
+    )
     joint_deviation_arms = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.5,
+        weight=-0.3,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot",
-                joint_names=[".*torso.*", ".*_arm_roll.*", ".*_arm_yaw.*", ".*_elbow.*", ".*_arm_pitch.*"],
+                joint_names=[".*_arm_roll.*", ".*_arm_yaw.*", ".*_elbow.*", ".*_arm_pitch.*"],
             )
         },
     )
     joint_deviation_legs = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.03,
+        weight=-0.01,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=[".*_thigh_pitch.*", ".*_knee.*", ".*_ankle.*"])},
     )
     feet_contact_without_cmd = RewTerm(
@@ -126,9 +144,90 @@ class ATOM01RewardCfg(RewardCfg):
         weight=0.2,
         params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=".*ankle_roll.*"),
                 "asset_cfg": SceneEntityCfg("robot", body_names=".*_ankle_roll.*"),
-                "threshold":0.06},
+                "threshold":0.08},
     )
 
+policy_obs_mirror_indices = [0, 1, 2,\
+                             3, 4, 5,\
+                             6, 7, 8,\
+                             10, 9, 11, 13, 12, 15, 14, 17, 16, 19, 18, 21, 20, 23, 22, 25, 24, 27, 26, 29, 28, 31, 30,\
+                             33, 32, 34, 36, 35, 38, 37, 40, 39, 42, 41, 44, 43, 46, 45, 48, 47, 50, 49, 52, 51, 54, 53,\
+                             56, 55, 57, 59, 58, 61, 60, 63, 62, 65, 64, 67, 66, 69, 68, 71, 70, 73, 72, 75, 74, 77, 76]
+policy_obs_mirror_signs = [-1, 1, -1,\
+                           1, -1, 1,\
+                           1, -1, -1,\
+                           -1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1,\
+                           -1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1,\
+                           -1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1]
+critic_obs_mirror_indices = [0, 1, 2,\
+                             3, 4, 5,\
+                             6, 7, 8,\
+                             10, 9, 11, 13, 12, 15, 14, 17, 16, 19, 18, 21, 20, 23, 22, 25, 24, 27, 26, 29, 28, 31, 30,\
+                             33, 32, 34, 36, 35, 38, 37, 40, 39, 42, 41, 44, 43, 46, 45, 48, 47, 50, 49, 52, 51, 54, 53,\
+                             56, 55, 57, 59, 58, 61, 60, 63, 62, 65, 64, 67, 66, 69, 68, 71, 70, 73, 72, 75, 74, 77, 76,\
+                             78, 79, 80,\
+                             82, 81]
+critic_obs_mirror_signs = [-1, 1, -1,\
+                           1, -1, 1,\
+                           1, -1, -1,\
+                           -1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1,\
+                           -1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1,\
+                           -1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1,\
+                            1, -1, 1,\
+                            1, 1]
+act_mirror_indices = [1, 0, 2, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15, 18, 17, 20, 19, 22, 21]
+act_mirror_signs = [-1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1]
+policy_obs_mirror_indices_expanded = []
+for i in range(10):
+    offset = i * 78
+    for idx in policy_obs_mirror_indices:
+        policy_obs_mirror_indices_expanded.append(idx + offset)
+policy_obs_mirror_signs_expanded = policy_obs_mirror_signs * 10
+
+critic_obs_mirror_indices_expanded = []
+for i in range(10):
+    offset = i * 82
+    for idx in critic_obs_mirror_indices:
+        critic_obs_mirror_indices_expanded.append(idx + offset)
+critic_obs_mirror_signs_expanded = critic_obs_mirror_signs * 10
+
+def mirror_policy_observation(policy_obs):
+    mirrored_policy_obs = policy_obs[..., policy_obs_mirror_indices_expanded]
+    policy_obs_mirror_signs_tensor_expanded = torch.tensor(policy_obs_mirror_signs_expanded, 
+                                                           dtype=policy_obs.dtype, 
+                                                           device=policy_obs.device)
+    mirrored_policy_obs = mirrored_policy_obs * policy_obs_mirror_signs_tensor_expanded
+    return mirrored_policy_obs
+
+def mirror_critic_observation(critic_obs):
+    mirrored_critic_obs = critic_obs[..., critic_obs_mirror_indices_expanded]
+    critic_obs_mirror_signs_tensor_expanded = torch.tensor(critic_obs_mirror_signs_expanded, 
+                                                           dtype=critic_obs.dtype, 
+                                                           device=critic_obs.device)
+    mirrored_critic_obs = mirrored_critic_obs * critic_obs_mirror_signs_tensor_expanded
+    return mirrored_critic_obs
+
+def mirror_actions(actions):
+    mirrored_actions = actions[..., act_mirror_indices]
+    act_mirror_signs_tensor = torch.tensor(act_mirror_signs, dtype=actions.dtype, device=actions.device)
+    mirrored_actions = mirrored_actions * act_mirror_signs_tensor
+    return mirrored_actions
+
+def data_augmentation_func(env, obs, actions, obs_type):
+    if obs is None:
+        obs_aug = None
+    else:
+        if obs_type == 'policy':
+            obs_aug = torch.cat((obs, mirror_policy_observation(obs)), dim=0)
+        elif obs_type == 'critic':
+            obs_aug = torch.cat((obs, mirror_critic_observation(obs)), dim=0)
+        else:
+            raise ValueError(f"Mirror logic for observation type '{obs_type}' not implemented")
+    if actions is None:
+        actions_aug = None
+    else:
+        actions_aug = torch.cat((actions, mirror_actions(actions)), dim=0)
+    return obs_aug, actions_aug
 
 @configclass
 class ATOM01FlatEnvCfg(BaseEnvCfg):
@@ -144,12 +243,42 @@ class ATOM01FlatEnvCfg(BaseEnvCfg):
         self.robot.terminate_contacts_body_names = [".*torso.*"]
         self.robot.feet_body_names = [".*ankle_roll.*"]
         self.domain_rand.events.add_base_mass.params["asset_cfg"].body_names = [".*torso.*"]
+        self.robot.action_scale = 0.25
 
 
 @configclass
 class ATOM01FlatAgentCfg(BaseAgentCfg):
     experiment_name: str = "atom01_flat"
     wandb_project: str = "atom01_flat"
+    seed = 42
+    num_steps_per_env = 24
+    max_iterations = 12001
+    save_interval = 500
+    empirical_normalization = False
+    algorithm = RslRlPpoAlgorithmCfg(
+        class_name="PPO",
+        value_loss_coef=1.0,
+        use_clipped_value_loss=True,
+        clip_param=0.2,
+        entropy_coef=0.005,
+        num_learning_epochs=5,
+        num_mini_batches=4,
+        learning_rate=1.0e-4,
+        schedule="adaptive",
+        gamma=0.994,
+        lam=0.9,
+        desired_kl=0.01,
+        max_grad_norm=1.0,
+        normalize_advantage_per_mini_batch=False,
+        symmetry_cfg=RslRlSymmetryCfg(
+            use_data_augmentation=True, 
+            use_mirror_loss=True,
+            mirror_loss_coeff=1.0, 
+            data_augmentation_func=data_augmentation_func
+        ),
+        rnd_cfg=None,  # RslRlRndCfg()
+    )
+    clip_actions = None
 
 
 @configclass
@@ -168,7 +297,7 @@ class ATOM01RoughEnvCfg(ATOM01FlatEnvCfg):
 
 
 @configclass
-class ATOM01RoughAgentCfg(BaseAgentCfg):
+class ATOM01RoughAgentCfg(ATOM01FlatAgentCfg):
     experiment_name: str = "atom01_rough"
     wandb_project: str = "atom01_rough"
 
