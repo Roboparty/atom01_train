@@ -192,8 +192,8 @@ def joint_pos_penalty(
     )
     reward = torch.where(
         torch.logical_or(cmd > 0.01, body_vel > 0.5),
-        0.1 * running_reward,
-        10.0 * running_reward,
+        0.02 * running_reward,
+        5.0 * running_reward,
     )
     reward *= torch.clamp(-env.scene["robot"].data.projected_gravity_b[:, 2], 0, 0.7) / 0.7
     return reward
