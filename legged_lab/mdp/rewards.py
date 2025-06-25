@@ -210,10 +210,11 @@ def feet_height(env: BaseEnv, sensor_cfg: SceneEntityCfg, asset_cfg: SceneEntity
     contacts = contact_sensor.data.net_forces_w_history[:, :, sensor_cfg.body_ids, :].norm(dim=-1).max(dim=1)[0] > 5.0
     asset: Articulation = env.scene[asset_cfg.name]
     feet_z = asset.data.body_pos_w[:, asset_cfg.body_ids, 2]
-    # Compute swing mask
-    swing_mask = 1.0 - contacts.float()
+    # Compute single_stance mask
+    single_stance = torch.sum(contacts.int(), dim=1) == 1
+    single_stance_expanded =single_stance.unsqueeze(-1)
     # feet height should be closed to target feet height at the peak
     rew_pos = feet_z > threshold
-    reward = torch.sum(rew_pos * swing_mask, dim=1)
+    reward = torch.sum(rew_pos * single_stance_expanded, dim=1)
     reward *= torch.clamp(-env.scene["robot"].data.projected_gravity_b[:, 2], 0, 0.7) / 0.7
     return reward
