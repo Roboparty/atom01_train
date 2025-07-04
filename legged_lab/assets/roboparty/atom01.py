@@ -30,7 +30,7 @@ ATOM01_CFG = ArticulationCfg(
             max_depenetration_velocity=1.0,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=True, solver_position_iteration_count=8, solver_velocity_iteration_count=4
+            enabled_self_collisions=True, solver_position_iteration_count=8, solver_velocity_iteration_count=0
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
@@ -60,25 +60,25 @@ ATOM01_CFG = ArticulationCfg(
                 ".*torso.*",
             ],
             stiffness={
-                ".*_thigh_yaw_joint": 150.0,
-                ".*_thigh_roll_joint": 150.0,
-                ".*_thigh_pitch_joint": 200.0,
+                ".*_thigh_yaw_joint": 125.0,
+                ".*_thigh_roll_joint": 125.0,
+                ".*_thigh_pitch_joint": 150.0,
                 ".*_knee_joint": 200.0,
-                ".*torso.*": 200.0,
+                ".*torso.*": 150.0,
             },
             damping={
                 ".*_thigh_yaw_joint": 4.0,
                 ".*_thigh_roll_joint": 4.0,
-                ".*_thigh_pitch_joint": 5.0,
+                ".*_thigh_pitch_joint": 4.5,
                 ".*_knee_joint": 5.0,
-                ".*torso.*": 5.0,
+                ".*torso.*": 4.5,
             },
             armature=0.01,
         ),
         "feet": ImplicitActuatorCfg(
             joint_names_expr=[".*_ankle_pitch_joint", ".*_ankle_roll_joint"],
-            stiffness=100.0,
-            damping=3.0,
+            stiffness=50.0,
+            damping=2.5,
             armature=0.01,
         ),
         "shoulders": ImplicitActuatorCfg(
@@ -88,7 +88,7 @@ ATOM01_CFG = ArticulationCfg(
                 ".*_arm_yaw_joint",
             ],
             stiffness=100.0,
-            damping=3.0,
+            damping=3.5,
             armature=0.01,
         ),
         "arms": ImplicitActuatorCfg(
@@ -98,10 +98,10 @@ ATOM01_CFG = ArticulationCfg(
             ],
             stiffness={
                 ".*_elbow_pitch_joint": 75.0,
-                ".*_elbow_yaw_joint": 50.0,
+                ".*_elbow_yaw_joint": 25.0,
             },
             damping={
-                ".*_elbow_pitch_joint": 2.5,
+                ".*_elbow_pitch_joint": 3.0,
                 ".*_elbow_yaw_joint": 2.0,
             },
             armature=0.01,
