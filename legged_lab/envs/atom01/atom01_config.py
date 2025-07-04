@@ -45,8 +45,8 @@ class ATOM01RewardCfg(RewardCfg):
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-0.2)
     ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.1)
     energy = RewTerm(func=mdp.energy, weight=-2.5e-5)
-    joint_torques_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-2.5e-6)
-    joint_vel_l2 = RewTerm(func=mdp.joint_vel_l2, weight=-1e-4)
+    joint_torques_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-5e-6)
+    joint_vel_l2 = RewTerm(func=mdp.joint_vel_l2, weight=-2e-4)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-7)
     action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-2)
     undesired_contacts = RewTerm(
@@ -55,21 +55,21 @@ class ATOM01RewardCfg(RewardCfg):
         params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names="(?!.*ankle_roll.*).*"), "threshold": 1.0},
     )
     flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-0.4)
-    # left_feet_orientation_l2 = RewTerm(
-    #     func=mdp.body_orientation_l2,
-    #     weight=-0.1,
-    #     params={"asset_cfg": SceneEntityCfg("robot", body_names=".*left_ankle_roll.*")},
-    # )
-    # right_feet_orientation_l2 = RewTerm(
-    #     func=mdp.body_orientation_l2,
-    #     weight=-0.1,
-    #     params={"asset_cfg": SceneEntityCfg("robot", body_names=".*right_ankle_roll.*")},
-    # )
+    left_feet_orientation_l2 = RewTerm(
+        func=mdp.body_orientation_l2,
+        weight=-0.2,
+        params={"asset_cfg": SceneEntityCfg("robot", body_names=".*left_ankle_roll.*")},
+    )
+    right_feet_orientation_l2 = RewTerm(
+        func=mdp.body_orientation_l2,
+        weight=-0.2,
+        params={"asset_cfg": SceneEntityCfg("robot", body_names=".*right_ankle_roll.*")},
+    )
     termination_penalty = RewTerm(func=mdp.is_terminated, weight=-200.0)
     feet_air_time = RewTerm(
         func=mdp.feet_air_time_positive_biped,
-        weight=1.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=".*ankle_roll.*"), "threshold": 0.6},
+        weight=0.8,
+        params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=".*ankle_roll.*"), "threshold": 0.5},
     )
     feet_slide = RewTerm(
         func=mdp.feet_slide,
@@ -91,7 +91,7 @@ class ATOM01RewardCfg(RewardCfg):
     feet_distance = RewTerm(
         func=mdp.feet_distance,
         weight=0.2,
-        params={"asset_cfg": SceneEntityCfg("robot", body_names=[".*ankle_roll.*"]), "min": 0.15, "max": 0.5},
+        params={"asset_cfg": SceneEntityCfg("robot", body_names=[".*ankle_roll.*"]), "min": 0.15, "max": 0.65},
     )
     feet_stumble = RewTerm(
         func=mdp.feet_stumble,
@@ -113,7 +113,7 @@ class ATOM01RewardCfg(RewardCfg):
         weight=-1.0,
         params={
             "asset_cfg": SceneEntityCfg(
-                "robot", joint_names=[".*torso.*"]
+                "robot", joint_names=[".*_arm_roll.*", ".*_arm_yaw.*", ".*torso.*"]
             )
         },
     )
@@ -123,7 +123,7 @@ class ATOM01RewardCfg(RewardCfg):
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot",
-                joint_names=[".*_arm_roll.*", ".*_arm_yaw.*", ".*_elbow.*", ".*_arm_pitch.*"],
+                joint_names=[".*_elbow.*", ".*_arm_pitch.*"],
             )
         },
     )
@@ -137,6 +137,11 @@ class ATOM01RewardCfg(RewardCfg):
         weight=0.4,
         params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=[".*ankle_roll.*"])},
     )
+    no_feet_contact = RewTerm(
+        func=mdp.no_feet_contact,
+        weight=-0.4,
+        params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=[".*ankle_roll.*"])},
+    )
     upward = RewTerm(func=mdp.upward, weight=0.2)
     joint_pos_penalty = RewTerm(func=mdp.joint_pos_penalty, weight=-0.5, params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*")})
     feet_height = RewTerm(
@@ -144,7 +149,7 @@ class ATOM01RewardCfg(RewardCfg):
         weight=0.2,
         params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=".*ankle_roll.*"),
                 "asset_cfg": SceneEntityCfg("robot", body_names=".*_ankle_roll.*"),
-                "threshold":0.04+0.06})  # 0.04 is the height of the ankle roll, 0.06 is the height of the foot
+                "threshold":0.02+0.04})  # 0.02 is the height of the ankle roll, 0.04 is the height of the foot
 
 policy_obs_mirror_indices = [0, 1, 2,\
                              3, 4, 5,\
@@ -251,7 +256,7 @@ class ATOM01FlatAgentCfg(BaseAgentCfg):
     wandb_project: str = "atom01_flat"
     seed = 42
     num_steps_per_env = 24
-    max_iterations = 12001
+    max_iterations = 9001
     save_interval = 500
     empirical_normalization = False
     algorithm = RslRlPpoAlgorithmCfg(

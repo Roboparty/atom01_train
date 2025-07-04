@@ -170,6 +170,17 @@ def feet_contact_without_cmd(env: BaseEnv, sensor_cfg: SceneEntityCfg) -> torch.
     return reward
 
 
+def no_feet_contact(env: BaseEnv, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Penalize no feet contact"""
+    # extract the used quantities (to enable type-hinting)
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    # compute the reward
+    contacts = contact_sensor.data.net_forces_w_history[:, :, sensor_cfg.body_ids, :].norm(dim=-1).max(dim=1)[0] > 5.0
+    no_contact = contacts.sum(dim=1) == 0
+    reward = torch.where(no_contact, 1.0, 0.0)
+    return reward
+
+
 def upward(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     """Penalize z-axis base linear velocity using L2 squared kernel."""
     # extract the used quantities (to enable type-hinting)
@@ -192,7 +203,7 @@ def joint_pos_penalty(
     )
     reward = torch.where(
         torch.logical_or(cmd > 0.01, body_vel > 0.5),
-        0.02 * running_reward,
+        0.0,
         5.0 * running_reward,
     )
     reward *= torch.clamp(-env.scene["robot"].data.projected_gravity_b[:, 2], 0, 0.7) / 0.7
@@ -211,10 +222,9 @@ def feet_height(env: BaseEnv, sensor_cfg: SceneEntityCfg, asset_cfg: SceneEntity
     asset: Articulation = env.scene[asset_cfg.name]
     feet_z = asset.data.body_pos_w[:, asset_cfg.body_ids, 2]
     # Compute single_stance mask
-    single_stance = torch.sum(contacts.int(), dim=1) == 1
-    single_stance_expanded =single_stance.unsqueeze(-1)
+    single_stance = contacts.sum(dim=1) == 1
     # feet height should be closed to target feet height at the peak
     rew_pos = feet_z > threshold
-    reward = torch.sum(rew_pos * single_stance_expanded, dim=1)
+    reward = torch.where(single_stance.unsqueeze(-1), rew_pos.float(), 0.0).sum(dim=1)
     reward *= torch.clamp(-env.scene["robot"].data.projected_gravity_b[:, 2], 0, 0.7) / 0.7
     return reward
