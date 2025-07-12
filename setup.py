@@ -18,9 +18,7 @@ setup(
     packages=find_packages(),
     version="1.0.0",
     install_requires=[
-        # 'isaacsim',
-        # "IsaacLab",
-        "rsl-rl-lib>=2.3.0",
-        "mujoco==2.3.6",
+        "mujoco==3.3.3",
+        "mujoco-python-viewer",
     ],
 )
