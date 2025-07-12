@@ -306,13 +306,13 @@ if __name__ == '__main__':
             else:
                 mujoco_model_path = f'{LEGGED_LAB_ROOT_DIR}/legged_lab/assets/roboparty/atom/mjcf/atom01.xml'
             sim_duration = 10.0
-            dt = 0.001
-            decimation = 20
+            dt = 0.004
+            decimation = 5
 
         class robot_config:
-            kps = np.array([150, 150, 200, 200, 100, 100, 150, 150, 200, 200, 100, 100, 150, 100, 100, 100, 50, 50, 100, 100, 100, 50, 50], dtype=np.double)
-            kds = np.array([4, 4, 5, 5, 3, 3, 4, 4, 5, 5, 3, 3, 4, 3, 3, 3, 2, 2, 3, 3, 3, 2, 2], dtype=np.double)
-            default_pos = np.array([0, 0, -0.24, 0.48, -0.24, 0, 0, 0, -0.24, 0.48, -0.24, 0, 0, 0.24, 0, 0, 0.6, 0, 0.24, 0, 0, 0.6, 0], dtype=np.double)
+            kps = np.array([150, 150, 200, 200, 25, 25, 150, 150, 200, 200, 25, 25, 200, 100, 100, 100, 50, 25, 100, 100, 100, 50, 25], dtype=np.double)
+            kds = np.array([5.0, 5.0, 5.0, 5.0, 2.0, 2.0, 5.0, 5.0, 5.0, 5.0, 2.0, 2.0, 5.0, 3.0, 3.0, 3.0, 2.5, 2.0, 3.0, 3.0, 3.0, 2.5, 2.0], dtype=np.double)
+            default_pos = np.array([0, 0, -0.24, 0.48, -0.24, 0, 0, 0, -0.24, 0.48, -0.24, 0, 0, 0.3, 0.1, 0, 0.9, 0, 0.3, -0.1, 0, 0.9, 0], dtype=np.double)
             tau_limit = 200. * np.ones(23, dtype=np.double)
             frame_stack = 10
             num_single_obs = 78
