@@ -125,6 +125,8 @@ class BaseEnv(VecEnv):
         self.episode_length_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
         self.sim_step_counter = 0
         self.time_out_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+        self.last_feet_z = torch.zeros(self.num_envs, 2, device=self.device, dtype=torch.float)
+        self.feet_height = torch.zeros(self.num_envs, 2, device=self.device, dtype=torch.float)
         self.init_obs_buffer()
 
     def compute_current_observations(self):
