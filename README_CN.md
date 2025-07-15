@@ -28,7 +28,7 @@
 
 ## 安装
 
-ATOM01-Lab 是基于最新版本的 Isaacsim/IsaacLab 构建的。建议遵循 legged lab 的最新更新。
+ATOM01-Lab 是基于最新版本的 Isaacsim/IsaacLab 构建的。建议使用ATOM01-Lab 的最新版本。
 
 - 按照[安装指南](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html)安装 Isaac Lab。我们推荐使用 conda 安装，因为它简化了从终端调用 Python 脚本的过程。
 
@@ -70,7 +70,7 @@ python legged_lab/scripts/sim2sim_atom01.py --load_model "{exported/policy.pt mo
 
 ## 多GPU和多节点训练
 
-Legged Lab 支持使用 rsl_rl 进行多GPU和多节点强化学习，用法与 IsaacLab 完全相同。[详细信息](https://isaac-sim.github.io/IsaacLab/main/source/features/multi_gpu.html)
+ATOM01-Lab 支持使用 rsl_rl 进行多GPU和多节点强化学习，用法与 IsaacLab 完全相同。[详细信息](https://isaac-sim.github.io/IsaacLab/main/source/features/multi_gpu.html)
 
 
 ## 参考和致谢

@@ -28,7 +28,7 @@ This repository provides a direct workflow for training a legged robot using Isa
 
 ## Installation
 
-ATOM01-Lab is built against the latest version of Isaacsim/IsaacLab. It is recommended to follow the latest updates of legged lab.
+ATOM01-Lab is built against the latest version of Isaacsim/IsaacLab. It is recommended to follow the latest updates of ATOM01-Lab.
 
 - Install Isaac Lab by following the [installation guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html). We recommend using the conda installation as it simplifies calling Python scripts from the terminal.
 
@@ -70,7 +70,7 @@ python legged_lab/scripts/sim2sim_atom01.py --load_model "{exported/policy.pt mo
 
 ## Multi-GPU and Multi-Node Training
 
-Legged Lab supports multi-GPU and multi-node reinforcement learning using rsl_rl, the usage is exactly the same as IsaacLab. [Detailed information](https://isaac-sim.github.io/IsaacLab/main/source/features/multi_gpu.html)
+ATOM01-Lab supports multi-GPU and multi-node reinforcement learning using rsl_rl, the usage is exactly the same as IsaacLab. [Detailed information](https://isaac-sim.github.io/IsaacLab/main/source/features/multi_gpu.html)
 
 
 ## References and Thanks
