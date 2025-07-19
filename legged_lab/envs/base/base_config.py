@@ -118,10 +118,11 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
-            "static_friction_range": (0.6, 1.0),
-            "dynamic_friction_range": (0.4, 0.8),
-            "restitution_range": (0.0, 0.005),
+            "static_friction_range": (0.1, 1.3),
+            "dynamic_friction_range": (0.1, 0.8),
+            "restitution_range": (0.0, 0.5),
             "num_buckets": 64,
+            "make_consistent": True, 
         },
     )
     add_base_mass = EventTerm(
@@ -131,6 +132,45 @@ class EventCfg:
             "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
             "mass_distribution_params": (-5.0, 5.0),
             "operation": "add",
+        },
+    )
+    randomize_rigid_body_com = EventTerm(
+        func=mdp.randomize_base_body_com,
+        mode="startup",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
+            "com_range": {"x": (-0.05, 0.05), "y": (-0.05, 0.05), "z": (-0.1, 0.1)},
+        },
+    )
+    scale_link_mass = EventTerm(
+        func=mdp.randomize_rigid_body_mass,
+        mode="startup",
+        params={
+            "asset_cfg": SceneEntityCfg(
+                "robot", body_names=MISSING
+            ),
+            "mass_distribution_params": (0.8, 1.2),
+            "operation": "scale",
+        },
+    )
+    scale_actuator_gains = EventTerm(
+        func=mdp.randomize_actuator_gains,
+        mode="startup",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=MISSING),
+            "stiffness_distribution_params": (0.8, 1.2),
+            "damping_distribution_params": (0.8, 1.2),
+            "operation": "scale",
+        },
+    )
+    scale_joint_parameters = EventTerm(
+        func=mdp.randomize_joint_parameters,
+        mode="startup",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=MISSING),
+            "friction_distribution_params": (1.0, 1.0),
+            "armature_distribution_params": (0.5, 1.5),
+            "operation": "scale",
         },
     )
     reset_base = EventTerm(
