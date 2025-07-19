@@ -42,25 +42,25 @@ from legged_lab.terrains import GRAVEL_TERRAINS_CFG, ROUGH_TERRAINS_CFG
 class ATOM01RewardCfg(RewardCfg):
     track_lin_vel_xy_exp = RewTerm(func=mdp.track_lin_vel_xy_yaw_frame_exp, weight=2.0, params={"std": 0.2})
     track_ang_vel_z_exp = RewTerm(func=mdp.track_ang_vel_z_world_exp, weight=2.0, params={"std": 0.2})
-    lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-0.2)
-    ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.4)
+    lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-0.4)
+    ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.2)
     energy = RewTerm(func=mdp.energy, weight=-2.5e-5)
-    joint_torques_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-5e-6)
+    joint_torques_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-1e-5)
     joint_vel_l2 = RewTerm(func=mdp.joint_vel_l2, weight=-2e-4)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-7)
-    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-2e-2)
-    action_smoothness_l2 = RewTerm(func=mdp.action_smoothness_l2, weight=-2e-2)
+    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-2)
+    action_smoothness_l2 = RewTerm(func=mdp.action_smoothness_l2, weight=-1e-2)
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-1.0,
         params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names="(?!.*ankle_roll.*).*"), "threshold": 1.0},
     )
-    flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-0.8)
+    flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-1.0)
     termination_penalty = RewTerm(func=mdp.is_terminated, weight=-200.0)
     feet_air_time = RewTerm(
         func=mdp.feet_air_time_positive_biped,
-        weight=1.2,
-        params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=".*ankle_roll.*"), "threshold": 0.6},
+        weight=1.0,
+        params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=".*ankle_roll.*"), "threshold": 0.5},
     )
     feet_slide = RewTerm(
         func=mdp.feet_slide,
@@ -72,7 +72,7 @@ class ATOM01RewardCfg(RewardCfg):
     )
     feet_force = RewTerm(
         func=mdp.body_force,
-        weight=-5e-3,
+        weight=-3e-3,
         params={
             "sensor_cfg": SceneEntityCfg("contact_sensor", body_names=".*ankle_roll.*"),
             "threshold": 500,
@@ -80,13 +80,13 @@ class ATOM01RewardCfg(RewardCfg):
         },
     )
     feet_distance = RewTerm(
-        func=mdp.body_distance,
-        weight=0.2,
+        func=mdp.body_distance_y,
+        weight=0.4,
         params={"asset_cfg": SceneEntityCfg("robot", body_names=[".*ankle_roll.*"]), "min": 0.2, "max": 0.7},
     )
     knee_distance = RewTerm(
-        func=mdp.body_distance,
-        weight=0.2,
+        func=mdp.body_distance_y,
+        weight=0.4,
         params={"asset_cfg": SceneEntityCfg("robot", body_names=[".*_knee.*"]), "min": 0.2, "max": 0.35},
     )
     feet_stumble = RewTerm(
@@ -97,7 +97,7 @@ class ATOM01RewardCfg(RewardCfg):
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1.0)
     joint_deviation_hip = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.15,
+        weight=-0.1,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", joint_names=[".*_thigh_yaw.*", ".*_thigh_roll.*", ".*_ankle_roll.*"]
@@ -106,7 +106,7 @@ class ATOM01RewardCfg(RewardCfg):
     )
     joint_deviation_torso = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-1.0,
+        weight=-2.5,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", joint_names=[".*_arm_roll.*", ".*_arm_yaw.*", ".*_elbow_yaw.*", ".*torso.*"]
@@ -135,11 +135,11 @@ class ATOM01RewardCfg(RewardCfg):
     )
     no_feet_contact = RewTerm(
         func=mdp.no_feet_contact,
-        weight=-0.4,
+        weight=-0.1,
         params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=[".*ankle_roll.*"])},
     )
-    upward = RewTerm(func=mdp.upward, weight=0.15)
-    joint_pos_penalty = RewTerm(func=mdp.joint_pos_penalty, weight=-5.0, params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*")})
+    upward = RewTerm(func=mdp.upward, weight=0.2)
+    joint_pos_penalty = RewTerm(func=mdp.joint_pos_penalty, weight=-2.5, params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*")})
     feet_height = RewTerm(
         func=mdp.feet_height,
         weight=0.2,
@@ -243,6 +243,10 @@ class ATOM01FlatEnvCfg(BaseEnvCfg):
         self.robot.terminate_contacts_body_names = [".*torso.*"]
         self.robot.feet_body_names = [".*ankle_roll.*"]
         self.domain_rand.events.add_base_mass.params["asset_cfg"].body_names = [".*torso.*"]
+        self.domain_rand.events.randomize_rigid_body_com.params["asset_cfg"].body_names = [".*torso.*"]
+        self.domain_rand.events.scale_link_mass.params["asset_cfg"].body_names = ["left_.*_link", "right_.*_link"]
+        self.domain_rand.events.scale_actuator_gains.params["asset_cfg"].joint_names = [".*_joint"]
+        self.domain_rand.events.scale_joint_parameters.params["asset_cfg"].joint_names = [".*_joint"]
         self.robot.action_scale = 0.25
 
 
@@ -252,9 +256,9 @@ class ATOM01FlatAgentCfg(BaseAgentCfg):
     wandb_project: str = "atom01_flat"
     seed = 42
     num_steps_per_env = 24
-    max_iterations = 9001
-    save_interval = 500
-    empirical_normalization = False
+    max_iterations = 15001
+    save_interval = 1000
+    empirical_normalization = True
     algorithm = RslRlPpoAlgorithmCfg(
         class_name="PPO",
         value_loss_coef=1.0,
@@ -265,8 +269,8 @@ class ATOM01FlatAgentCfg(BaseAgentCfg):
         num_mini_batches=4,
         learning_rate=1.0e-4,
         schedule="adaptive",
-        gamma=0.994,
-        lam=0.9,
+        gamma=0.99,
+        lam=0.95,
         desired_kl=0.01,
         max_grad_norm=1.0,
         normalize_advantage_per_mini_batch=False,
@@ -278,7 +282,7 @@ class ATOM01FlatAgentCfg(BaseAgentCfg):
         ),
         rnd_cfg=None,  # RslRlRndCfg()
     )
-    clip_actions = None
+    clip_actions = 100.0
 
 
 @configclass
