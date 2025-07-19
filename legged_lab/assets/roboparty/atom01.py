@@ -30,7 +30,7 @@ ATOM01_CFG = ArticulationCfg(
             max_depenetration_velocity=1.0,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=True, solver_position_iteration_count=8, solver_velocity_iteration_count=0
+            enabled_self_collisions=True, solver_position_iteration_count=8, solver_velocity_iteration_count=4
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
@@ -39,15 +39,15 @@ ATOM01_CFG = ArticulationCfg(
             "left_thigh_pitch_joint": -0.24,
             "left_knee_joint": 0.48,
             "left_ankle_pitch_joint": -0.24,
-            "left_arm_pitch_joint": 0.3,
-            "left_arm_roll_joint": 0.1,
-            "left_elbow_pitch_joint": 0.9,
+            "left_arm_pitch_joint": 0.1,
+            "left_arm_roll_joint": 0.07,
+            "left_elbow_pitch_joint": 1.2,
             "right_thigh_pitch_joint": -0.24,
             "right_knee_joint": 0.48,
             "right_ankle_pitch_joint": -0.24,
-            "right_arm_pitch_joint": 0.3,
-            "right_arm_roll_joint": -0.1,
-            "right_elbow_pitch_joint": 0.9,
+            "right_arm_pitch_joint": 0.1,
+            "right_arm_roll_joint": -0.07,
+            "right_elbow_pitch_joint": 1.2,
         },
         joint_vel={".*": 0.0},
     ),
@@ -79,8 +79,8 @@ ATOM01_CFG = ArticulationCfg(
         ),
         "feet": ImplicitActuatorCfg(
             joint_names_expr=[".*_ankle_pitch_joint", ".*_ankle_roll_joint"],
-            stiffness=25.0,
-            damping=2.0,
+            stiffness=50.0,
+            damping=2.5,
             armature=0.01,
         ),
         "shoulders": ImplicitActuatorCfg(
@@ -89,7 +89,7 @@ ATOM01_CFG = ArticulationCfg(
                 ".*_arm_roll_joint",
                 ".*_arm_yaw_joint",
             ],
-            stiffness=100.0,
+            stiffness=75.0,
             damping=3.0,
             armature=0.01,
         ),
