@@ -62,7 +62,7 @@ def ang_vel_xy_l2(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robo
 
 def energy(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     asset: Articulation = env.scene[asset_cfg.name]
-    reward = torch.norm(torch.abs(asset.data.applied_torque * asset.data.joint_vel), dim=-1)
+    reward = torch.sum(torch.abs(asset.data.applied_torque * asset.data.joint_vel), dim=-1)
     return reward
 
 
@@ -154,13 +154,13 @@ def feet_stumble(env: BaseEnv, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
     )
 
 
-def body_distance(
+def body_distance_y(
     env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"), min: float = 0.2, max: float = 0.5
 ) -> torch.Tensor:
     assert len(asset_cfg.body_ids) == 2
     asset: Articulation = env.scene[asset_cfg.name]
-    feet_pos = asset.data.body_pos_w[:, asset_cfg.body_ids, :2]
-    distance = torch.norm(feet_pos[:, 0] - feet_pos[:, 1], dim=-1)
+    feet_pos = asset.data.body_pos_w[:, asset_cfg.body_ids, 1]
+    distance = torch.abs(feet_pos[:, 0] - feet_pos[:, 1])
     d_min = torch.clamp(distance - min, -0.5, 0.)
     d_max = torch.clamp(distance - max, 0, 0.5)
     return (torch.exp(-torch.abs(d_min) * 100) + torch.exp(-torch.abs(d_max) * 100)) / 2
