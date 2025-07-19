@@ -115,6 +115,8 @@ def run_mujoco(policy, cfg, headless=False):
     time_data = []
     commanded_joint_pos_data = []
     actual_joint_pos_data = []
+    tau = np.zeros((cfg.robot_config.num_actions), dtype=np.double)  # Initialize tau
+    tau_data = []
     commanded_lin_vel_x_data = []
     commanded_lin_vel_y_data = []
     commanded_ang_vel_z_data = []
@@ -140,13 +142,13 @@ def run_mujoco(policy, cfg, headless=False):
 
             obs = np.zeros([1, cfg.robot_config.num_single_obs], dtype=np.float32)
             
-            obs[0, 0:3] = omega * 0.25
+            obs[0, 0:3] = omega
             obs[0, 3:6] = gvec
             obs[0, 6] = cmd.vx 
             obs[0, 7] = cmd.vy 
             obs[0, 8] = cmd.dyaw 
             obs[0, 9:32] = q_obs
-            obs[0, 32:55] = dq_obs * 0.05
+            obs[0, 32:55] = dq_obs
             obs[0, 55:78] = action
 
             hist_obs = np.concatenate((hist_obs[1:], obs.reshape(1, -1)), axis=0)
@@ -172,6 +174,7 @@ def run_mujoco(policy, cfg, headless=False):
             time_data.append(step * cfg.sim_config.dt)
             commanded_joint_pos_data.append(target_pos.copy())
             actual_joint_pos_data.append(q_low_freq) # Use the captured actual joint pos
+            tau_data.append(tau.copy())
             commanded_lin_vel_x_data.append(cmd.vx)
             commanded_lin_vel_y_data.append(cmd.vy)
             commanded_ang_vel_z_data.append(cmd.dyaw)
@@ -209,6 +212,7 @@ def run_mujoco(policy, cfg, headless=False):
     time_data = np.array(time_data)
     commanded_joint_pos_data = np.array(commanded_joint_pos_data)
     actual_joint_pos_data = np.array(actual_joint_pos_data)
+    tau_data = np.array(tau_data)
     commanded_lin_vel_x_data = np.array(commanded_lin_vel_x_data)
     commanded_lin_vel_y_data = np.array(commanded_lin_vel_y_data)
     commanded_ang_vel_z_data = np.array(commanded_ang_vel_z_data)
@@ -310,9 +314,9 @@ if __name__ == '__main__':
             decimation = 5
 
         class robot_config:
-            kps = np.array([150, 150, 200, 200, 25, 25, 150, 150, 200, 200, 25, 25, 200, 100, 100, 100, 50, 25, 100, 100, 100, 50, 25], dtype=np.double)
-            kds = np.array([5.0, 5.0, 5.0, 5.0, 2.0, 2.0, 5.0, 5.0, 5.0, 5.0, 2.0, 2.0, 5.0, 3.0, 3.0, 3.0, 2.5, 2.0, 3.0, 3.0, 3.0, 2.5, 2.0], dtype=np.double)
-            default_pos = np.array([0, 0, -0.24, 0.48, -0.24, 0, 0, 0, -0.24, 0.48, -0.24, 0, 0, 0.3, 0.1, 0, 0.9, 0, 0.3, -0.1, 0, 0.9, 0], dtype=np.double)
+            kps = np.array([150, 150, 200, 200, 50, 50, 150, 150, 200, 200, 50, 50, 200, 75, 75, 75, 50, 25, 75, 75, 75, 50, 25], dtype=np.double)
+            kds = np.array([5.0, 5.0, 5.0, 5.0, 2.5, 2.5, 5.0, 5.0, 5.0, 5.0, 2.5, 2.5, 5.0, 3.0, 3.0, 3.0, 2.5, 2.0, 3.0, 3.0, 3.0, 2.5, 2.0], dtype=np.double)
+            default_pos = np.array([0, 0, -0.24, 0.48, -0.24, 0, 0, 0, -0.24, 0.48, -0.24, 0, 0, 0.1, 0.07, 0, 1.2, 0, 0.1, -0.07, 0, 1.2, 0], dtype=np.double)
             tau_limit = 200. * np.ones(23, dtype=np.double)
             frame_stack = 10
             num_single_obs = 78
