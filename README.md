@@ -1,7 +1,7 @@
 # roboparty_train
 
 [![IsaacSim](https://img.shields.io/badge/IsaacSim-5.1.0-silver.svg)](https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html)
-[![Isaac Lab](https://img.shields.io/badge/IsaacLab-2.3.2-silver)](https://isaac-sim.github.io/IsaacLab)
+[![Isaac Lab](https://img.shields.io/badge/IsaacLab-main-silver)](https://isaac-sim.github.io/IsaacLab)
 [![RSL_RL](https://img.shields.io/badge/RSL_RL-3.3.0-silver)](https://github.com/leggedrobotics/rsl_rl)
 [![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://docs.python.org/3/whatsnew/3.11.html)
 [![Linux platform](https://img.shields.io/badge/platform-linux--64-orange.svg)](https://releases.ubuntu.com/22.04/)
@@ -34,7 +34,7 @@ The repository is organized as a thin workspace with two Git submodules:
 ## Requirements
 
 - Python 3.11.
-- Isaac Sim 5.1.0 and Isaac Lab 2.3.2.
+- Isaac Sim 5.1.0 and Isaac Lab main.
 - Ubuntu 22.04 x64 or Windows x64.
 
 Install Isaac Lab by following the [official installation guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html). Run the commands below in the Python environment used by Isaac Lab.
